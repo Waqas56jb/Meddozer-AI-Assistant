@@ -1,7 +1,10 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
+
+const isVercel = process.env.VERCEL === '1';
 
 const app = express();
 app.use(cors());
@@ -354,15 +357,32 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ─── SERVE REACT BUILD (production) ─────────────────────────────────────────
-app.use(express.static(frontendDist));
-app.get('*', (req, res) => {
-  res.sendFile(path.join(frontendDist, 'index.html'));
+// Root (useful when API is deployed alone on Vercel)
+app.get('/', (req, res) => {
+  res.json({
+    service: 'Meddozer MEDDY API',
+    health: '/api/health',
+    chat: 'POST /api/chat',
+    lead: 'POST /api/lead'
+  });
 });
 
+// ─── SERVE REACT BUILD (local / single-server production only; not on Vercel API) ──
+if (!isVercel && fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+}
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`\n🏥 Meddozer MEDDY Chatbot Server running on http://localhost:${PORT}`);
-  console.log(`📡 API: http://localhost:${PORT}/api/chat`);
-  console.log(`✅ OpenAI Key: ${process.env.OPENAI_API_KEY ? 'Configured ✓' : '⚠️ MISSING — add to .env'}\n`);
-});
+
+if (!isVercel) {
+  app.listen(PORT, () => {
+    console.log(`\n🏥 Meddozer MEDDY Chatbot Server running on http://localhost:${PORT}`);
+    console.log(`📡 API: http://localhost:${PORT}/api/chat`);
+    console.log(`✅ OpenAI Key: ${process.env.OPENAI_API_KEY ? 'Configured ✓' : '⚠️ MISSING — add to .env'}\n`);
+  });
+}
+
+module.exports = app;

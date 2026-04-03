@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-const API_BASE = '/api';
+/** Local dev: use Vite proxy `/api`. Production (separate Vercel app): set VITE_API_BASE_URL = https://your-backend.vercel.app */
+const API_BASE = (() => {
+  const url = import.meta.env.VITE_API_BASE_URL;
+  if (url && String(url).trim()) {
+    return `${String(url).replace(/\/$/, '')}/api`;
+  }
+  return '/api';
+})();
 
 const SIDEBAR_QUICK_ACTIONS = [
   { icon: '🔨', label: 'Active Auctions', prompt: 'Show me active auctions on Meddozer right now' },
