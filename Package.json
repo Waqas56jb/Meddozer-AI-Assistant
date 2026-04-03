@@ -1,0 +1,23 @@
+{
+    "name": "meddozer-ai-chatbot",
+    "version": "2.0.0",
+    "description": "MEDDY — Meddozer AI Chatbot powered by OpenAI GPT-4o",
+    "main": "backend/server.js",
+    "scripts": {
+      "start": "node backend/server.js",
+      "dev": "nodemon backend/server.js",
+      "dev:client": "npm --prefix frontend run dev",
+      "build": "npm install --prefix frontend && npm run build --prefix frontend"
+    },
+    "dependencies": {
+      "express": "^4.18.2",
+      "cors": "^2.8.5",
+      "dotenv": "^16.3.1"
+    },
+    "devDependencies": {
+      "nodemon": "^3.0.1"
+    },
+    "engines": {
+      "node": ">=18.0.0"
+    }
+  }
