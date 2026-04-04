@@ -298,21 +298,26 @@ app.post('/api/chat', async (req, res) => {
       content: MEDDOZER_SYSTEM_PROMPT + (language ? `\n\nIMPORTANT: The user's detected language preference is "${language}". Respond in that language unless user explicitly writes in another language.` : '')
     };
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 25000); // 25s hard timeout
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
+      signal: controller.signal,
       body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [systemMessage, ...messages],
-        max_tokens: 1000,
+        model: 'gpt-4o-mini',
+        messages: [systemMessage, ...messages.slice(-10)],
+        max_tokens: 600,
         temperature: 0.7,
         presence_penalty: 0.1,
         frequency_penalty: 0.1
       })
     });
+    clearTimeout(timeout);
 
     if (!response.ok) {
       const errText = await response.text();
@@ -330,6 +335,9 @@ app.post('/api/chat', async (req, res) => {
 
   } catch (error) {
     console.error('Server error:', error);
+    if (error.name === 'AbortError') {
+      return res.status(504).json({ error: 'Request timed out. Please try again.' });
+    }
     res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 });

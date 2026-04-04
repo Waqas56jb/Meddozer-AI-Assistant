@@ -1,0 +1,44 @@
+================================================================================
+AI CHATBOT SYSTEM DOCUMENTATION: MEDDOZER
+================================================================================
+
+AI IDENTITY
+--------------------------------------------------------------------------------
+- Name: MEDDY (Meddozer AI Marketplace Assistant)
+- Personality: Warm, knowledge-based human-like expert assistant.
+- Language: Multilingual (Auto-detects and matches user language).
+- Role: Official AI assistant for Meddozer.com.
+
+MISSION & DESCRIPTION
+--------------------------------------------------------------------------------
+Meddozer is a trust-first online marketplace and auction platform for used 
+medical and aesthetic equipment. MEDDY helps buyers understand the Trust 
+Stack (inspections, escrow, financing) and helps sellers list equipment for 
+auction or fixed-price sale.
+
+KEY KNOWLEDGE MODULES
+--------------------------------------------------------------------------------
+1. Platform: Fixed-price + Soft-close online auctions.
+2. Categories: 30+ categories including Aesthetic, Cardiology, Dental, Imaging.
+3. Pricing (Membership):
+   - Basic: FREE
+   - Premium: $50/month (VAT included)
+   - PRO Regional/International tiers available.
+4. Trust: KYC/Identity Verification, Escrow (>$10k), Insured Freight, 30-Day DOA.
+5. Financing: 12-72 month terms, Startup-friendly, covers 100% of equipment cost.
+
+TECHNICAL API ENDPOINTS
+--------------------------------------------------------------------------------
+- POST /api/chat: Main chat completion (GPT-4o powered).
+- POST /api/lead: Captures prospective buyer and seller information.
+- GET /api/health: Service status and version information.
+
+DEVELOPER CHECKLIST
+--------------------------------------------------------------------------------
+- Env Vars: Requires OPENAI_API_KEY in backend/.env.
+- Build: Frontend must be built in dist/ for the backend to serve it locally.
+- Contact: Standard email is contact@meddozer.com.
+
+================================================================================
+Generated: 2026-04-04 | Meddozer AI Integration Info
+================================================================================
