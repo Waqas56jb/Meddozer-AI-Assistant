@@ -439,7 +439,7 @@ export default function App() {
               </div>
             );
           })}
-          {isTyping ? (
+          {isTyping && !showHome ? (
             <div className="typing-row" id="typingIndicator">
               <div className="msg-avatar bot-avatar typing-avatar">
                 <BrandLogo className="msg-bot-logo" width={64} height={64} />
