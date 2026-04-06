@@ -33,6 +33,19 @@ const WELCOME_PROMPTS = [
   { icon: '🔐', label: 'Trust & Safety', prompt: 'How does Meddozer protect buyers and sellers?' },
 ];
 
+function BrandLogo({ className, width = 40, height = 40 }) {
+  return (
+    <img
+      src="/logo.png"
+      alt=""
+      className={className}
+      width={width}
+      height={height}
+      decoding="async"
+    />
+  );
+}
+
 function formatMessage(text) {
   let t = text;
   t = t.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
@@ -66,7 +79,9 @@ function formatMessage(text) {
 function WelcomeScreen({ onQuickPrompt }) {
   return (
     <div className="welcome-screen" id="welcomeScreen">
-      <div className="welcome-avatar">🏥</div>
+      <div className="welcome-avatar">
+        <BrandLogo className="welcome-logo-img" width={120} height={120} />
+      </div>
       <div className="welcome-name">Hi, I&apos;m MEDDY</div>
       <div className="welcome-desc">
         Your intelligent AI consultant for{' '}
@@ -94,6 +109,7 @@ export default function App() {
   const [leadModalOpen, setLeadModalOpen] = useState(false);
   const [toast, setToast] = useState({ show: false, text: '' });
   const [sidebarMobileOpen, setSidebarMobileOpen] = useState(false);
+  const [showHome, setShowHome] = useState(false);
 
   const conversationHistoryRef = useRef([]);
   const chatAreaRef = useRef(null);
@@ -142,6 +158,7 @@ export default function App() {
 
       setIsLoading(true);
       setSidebarMobileOpen(false);
+      setShowHome(false);
       setInputValue('');
       requestAnimationFrame(() => {
         if (chatInputRef.current) {
@@ -220,6 +237,7 @@ export default function App() {
     conversationHistoryRef.current = [];
     setMessages([]);
     msgIdRef.current = 0;
+    setShowHome(false);
   }, []);
 
   const openLeadModal = useCallback(() => setLeadModalOpen(true), []);
@@ -275,10 +293,18 @@ export default function App() {
 
   return (
     <>
+      <button
+        type="button"
+        className={`sidebar-overlay${sidebarMobileOpen ? ' open' : ''}`}
+        aria-label="Close menu"
+        onClick={() => setSidebarMobileOpen(false)}
+      />
       <aside className={`sidebar${sidebarMobileOpen ? ' mobile-open' : ''}`} id="sidebar">
         <div className="sidebar-header">
           <div className="logo-row">
-            <div className="logo-icon">🏥</div>
+            <div className="logo-icon">
+              <BrandLogo className="brand-logo-img" width={72} height={72} />
+            </div>
             <div className="logo-text">
               <span className="logo-name">MEDDOZER</span>
               <span className="logo-sub">Medical Marketplace</span>
@@ -360,6 +386,11 @@ export default function App() {
             >
               ☰
             </button>
+            {messages.length > 0 && !showHome && (
+              <button type="button" className="back-home-btn" onClick={() => setShowHome(true)} title="Back to Home">
+                ← Home
+              </button>
+            )}
             <div className="topbar-title">
               <span className="topbar-name">MEDDY — Meddozer AI Assistant</span>
               <span className="topbar-sub">Medical Equipment Marketplace · Powered by GPT-4o</span>
@@ -376,7 +407,18 @@ export default function App() {
         </div>
 
         <div className="chat-area" id="chatArea" ref={chatAreaRef}>
-          {messages.length === 0 ? <WelcomeScreen onQuickPrompt={quickAction} /> : null}
+          {(messages.length === 0 || showHome) ? (
+            <div>
+              <WelcomeScreen onQuickPrompt={(p) => { setShowHome(false); quickAction(p); }} />
+              {messages.length > 0 && showHome && (
+                <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '24px' }}>
+                  <button type="button" className="continue-chat-btn" onClick={() => setShowHome(false)}>
+                    💬 Continue Conversation →
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : null}
           {messages.map((m) => {
             const bubbleInner =
               m.role === 'bot' && m.isFormatted ? (
@@ -386,7 +428,9 @@ export default function App() {
               );
             return (
               <div key={m.id} className={`msg-row ${m.role}`}>
-                <div className="msg-avatar">{m.role === 'bot' ? '🏥' : '👤'}</div>
+                <div className={`msg-avatar${m.role === 'bot' ? ' bot-avatar' : ''}`}>
+                  {m.role === 'bot' ? <BrandLogo className="msg-bot-logo" width={64} height={64} /> : '👤'}
+                </div>
                 <div className="msg-content">
                   <span className="msg-name">{m.role === 'bot' ? 'MEDDY' : 'You'}</span>
                   {bubbleInner}
@@ -397,22 +441,8 @@ export default function App() {
           })}
           {isTyping ? (
             <div className="typing-row" id="typingIndicator">
-              <div
-                className="msg-avatar"
-                style={{
-                  background: 'linear-gradient(135deg,var(--teal) 0%,#005c52 100%)',
-                  boxShadow: '0 0 10px rgba(0,165,145,0.25)',
-                  borderRadius: 9,
-                  width: 34,
-                  height: 34,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 16,
-                  flexShrink: 0,
-                }}
-              >
-                🏥
+              <div className="msg-avatar bot-avatar typing-avatar">
+                <BrandLogo className="msg-bot-logo" width={64} height={64} />
               </div>
               <div className="typing-bubble">
                 <div className="typing-dot" />
