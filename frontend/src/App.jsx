@@ -386,8 +386,13 @@ export default function App() {
             >
               ☰
             </button>
+            {messages.length > 0 && showHome && (
+              <button type="button" className="back-home-btn" onClick={() => setShowHome(false)} title="Back to conversation">
+                ← Back
+              </button>
+            )}
             {messages.length > 0 && !showHome && (
-              <button type="button" className="back-home-btn" onClick={() => setShowHome(true)} title="Back to Home">
+              <button type="button" className="back-home-btn back-home-btn--home" onClick={() => setShowHome(true)} title="Home">
                 ← Home
               </button>
             )}
