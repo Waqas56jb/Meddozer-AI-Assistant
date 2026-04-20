@@ -432,7 +432,7 @@ body {
   .welcome-screen {
     justify-content: center;
     min-height: 50vh;
-    padding: 20px;
+  padding: 20px;
   }
 }
 .welcome-avatar {
