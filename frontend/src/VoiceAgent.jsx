@@ -7,7 +7,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 
 const API_BASE = (() => {
-  const url = import.meta.env.VITE_API_BASE_URL;
+  const url = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_CHATBOT_API_BASE;
   if (url && String(url).trim()) return String(url).replace(/\/$/, '');
   return '';
 })();
