@@ -367,16 +367,8 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ─── Realtime Voice Agent — Ephemeral Token ──────────────────────────────────
-app.post('/api/realtime-token', async (req, res) => {
-  try {
-    const response = await fetch('https://api.openai.com/v1/realtime/sessions', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'gpt-4o-realtime-preview-2024-12-17',
-        voice: 'shimmer',
-        instructions: `You are MEDDY — Meddozer's AI Marketplace Assistant for Meddozer.com, a trusted marketplace for buying and selling used medical and aesthetic equipment.
+// ─── Realtime Voice Agent — Ephemeral key (GA: client_secrets + WebRTC /v1/realtime/calls) ──
+const MEDDY_REALTIME_INSTRUCTIONS = `You are MEDDY — Meddozer's AI Marketplace Assistant for Meddozer.com, a trusted marketplace for buying and selling used medical and aesthetic equipment.
 
 BEGIN IMMEDIATELY — greet the user the moment you connect:
 Say: "Hello! I'm MEDDY, your Meddozer marketplace assistant. I can help you buy, sell, finance, or ship medical equipment. How can I help you today?"
@@ -389,16 +381,42 @@ KEY FACTS:
 - Marketplace for used medical and aesthetic equipment
 - Services: Buy/sell/auction, financing, shipping/crating, escrow protection, DOA policy
 - Soft-close auctions, premium accounts, free registration
-- Responds in any language — detect and match user's language`,
-        modalities: ['audio', 'text'],
-        input_audio_transcription: { model: 'whisper-1' },
-        turn_detection: { type: 'server_vad', threshold: 0.5, prefix_padding_ms: 300, silence_duration_ms: 600, create_response: true }
+- Responds in any language — detect and match user's language`;
+
+app.post('/api/realtime-token', async (req, res) => {
+  try {
+    const response = await fetch('https://api.openai.com/v1/realtime/client_secrets', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        expires_after: { anchor: 'created_at', seconds: 1200 },
+        session: {
+          type: 'realtime',
+          model: 'gpt-realtime',
+          instructions: MEDDY_REALTIME_INSTRUCTIONS,
+          output_modalities: ['audio'],
+          audio: {
+            input: {
+              transcription: { model: 'whisper-1' },
+              turn_detection: {
+                type: 'server_vad',
+                threshold: 0.5,
+                prefix_padding_ms: 300,
+                silence_duration_ms: 600,
+                create_response: true
+              }
+            },
+            output: { voice: 'shimmer' }
+          }
+        }
       })
     });
     const data = await response.json();
-    if (!response.ok) return res.status(500).json({ error: 'Failed to create realtime session', details: data });
-    console.log('🎙️  Voice session created — expires:', data.client_secret?.expires_at);
-    res.json({ token: data.client_secret.value, expires: data.client_secret.expires_at });
+    if (!response.ok) return res.status(500).json({ error: 'Failed to create realtime client secret', details: data });
+    const token = data.value || data.client_secret?.value;
+    if (!token) return res.status(500).json({ error: 'No ephemeral token in OpenAI response', details: data });
+    console.log('🎙️  Voice client secret — expires:', data.expires_at);
+    res.json({ token, expires: data.expires_at });
   } catch (err) {
     console.error('Realtime token endpoint error:', err);
     res.status(500).json({ error: err.message });
